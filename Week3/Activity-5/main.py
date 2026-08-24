@@ -2,7 +2,7 @@ from database import Database
 from managers import CurrencyManager, CustomerManager, ExchangeRateManager, TransactionManager
 # Manager classes above each wrap one table and expose add()/list()/report methods.
 
-
+#FUNCTIONS
 def seed(currencies, rates):
     # Sample data used to populate an empty database on first run.
     # Customers are added via the "Add Customer" menu option instead of being seeded here.
@@ -107,6 +107,7 @@ def make_exchange(customers, currencies, rates, transactions):
     print(f"  Done: {amount} {from_currency} -> {to_amount} {to_currency} (rate {rate})")
 
 
+#MAIN
 def main():
     # Connect to the database and make sure the schema exists before doing anything else.
     db = Database()
