@@ -9,6 +9,26 @@ class CurrencyManager:
         connection.commit()
         connection.close()
 
+    def update(self, code, name, symbol=None):
+        connection = self.db.connect()
+        cursor = connection.cursor()
+        cursor.execute(
+            "UPDATE Currency SET currency_name = ?, symbol = ? WHERE currency_code = ?",
+            (name, symbol, code),
+        )
+        updated = cursor.rowcount > 0
+        connection.commit()
+        connection.close()
+        return updated
+
+    def get(self, code):
+        connection = self.db.connect()
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM Currency WHERE currency_code = ?", (code,))
+        row = cursor.fetchone()
+        connection.close()
+        return row
+
     def list(self):
         connection = self.db.connect()
         cursor = connection.cursor()

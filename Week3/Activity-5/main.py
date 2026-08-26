@@ -1,3 +1,5 @@
+from datetime import date
+
 from database import Database
 from managers import CurrencyManager, CustomerManager, ExchangeRateManager, TransactionManager
 # Manager classes above each wrap one table and expose add()/list()/report methods.
@@ -33,7 +35,10 @@ def menu():
     print("6. Make an Exchange")
     print("7. Report: Most active customers")
     print("8. Report: Total bought per currency")
-    print("9. Exit")
+    print("9. Admin: Add Currency")
+    print("10. Admin: Edit Currency")
+    print("11. Admin: Add/Edit Exchange Rate")
+    print("12. Exit")
 
 
 def add_customer(customers):
@@ -61,6 +66,81 @@ def add_customer(customers):
         print(f"  Could not add customer: {e}")
         return
     print(f"  Added {customer_id} | {first} {last} | {email} | {phone}")
+
+
+def add_currency(currencies):
+    # Admin action: register a new currency the system can exchange.
+    code = input("Currency code (e.g. GBP): ").strip().upper()
+    if not code:
+        print("  Currency code is required.")
+        return
+
+    if any(c["currency_code"] == code for c in currencies.list()):
+        print(f"  Currency '{code}' already exists. Use Edit Currency to change it.")
+        return
+
+    name = input("Currency name: ").strip()
+    symbol = input("Symbol (optional): ").strip() or None
+    if not name:
+        print("  Currency name is required.")
+        return
+
+    try:
+        currencies.add(code, name, symbol)
+    except Exception as e:
+        print(f"  Could not add currency: {e}")
+        return
+    print(f"  Added {code} | {name} | {symbol}")
+
+
+def edit_currency(currencies):
+    # Admin action: update an existing currency's name/symbol.
+    code = input("Currency code to edit (e.g. NZD): ").strip().upper()
+    existing = currencies.get(code)
+    if existing is None:
+        print(f"  No such currency '{code}'.")
+        return
+
+    print(f"  Current: {existing['currency_code']} | {existing['currency_name']} | {existing['symbol']}")
+    name = input(f"New name (blank to keep '{existing['currency_name']}'): ").strip() or existing["currency_name"]
+    symbol_input = input(f"New symbol (blank to keep '{existing['symbol']}'): ").strip()
+    symbol = symbol_input or existing["symbol"]
+
+    currencies.update(code, name, symbol)
+    print(f"  Updated {code} | {name} | {symbol}")
+
+
+def manage_exchange_rate(currencies, rates):
+    # Admin action: set the rate for a currency pair, whether it's a brand new
+    # pair or an update to an existing one (ExchangeRateManager.set_rate upserts).
+    available_codes = [c["currency_code"] for c in currencies.list()]
+    if len(available_codes) < 2:
+        print("  Need at least two currencies before setting a rate.")
+        return
+
+    from_currency = input("From currency (e.g. NZD): ").strip().upper()
+    while from_currency not in available_codes:
+        print(f"  Currency '{from_currency}' is not available. Available currencies: {', '.join(available_codes)}")
+        from_currency = input("From currency (e.g. NZD): ").strip().upper()
+
+    to_currency = input("To currency (e.g. USD): ").strip().upper()
+    while to_currency not in available_codes:
+        print(f"  Currency '{to_currency}' is not available. Available currencies: {', '.join(available_codes)}")
+        to_currency = input("To currency (e.g. USD): ").strip().upper()
+
+    existing_rate = rates.get_rate(from_currency, to_currency)
+    if existing_rate is not None:
+        print(f"  Current rate: {from_currency} -> {to_currency} = {existing_rate}")
+
+    try:
+        rate = float(input(f"New rate ({from_currency} -> {to_currency}): ").strip())
+    except ValueError:
+        print("  Rate must be a number.")
+        return
+
+    rate_date = input("Date (YYYY-MM-DD, blank for today): ").strip() or date.today().isoformat()
+    rates.set_rate(from_currency, to_currency, rate, rate_date)
+    print(f"  Set {from_currency} -> {to_currency} = {rate} (as of {rate_date})")
 
 
 def make_exchange(customers, currencies, rates, transactions):
@@ -127,7 +207,7 @@ def main():
     # Main application loop: show the menu, read a choice, dispatch, repeat until exit.
     while True:
         menu()
-        choice = input("Select an option (1-9): ").strip()
+        choice = input("Select an option (1-12): ").strip()
         if choice == "1":
             # List all currencies.
             for c in currencies.list():
@@ -161,11 +241,20 @@ def main():
             for r in transactions.total_bought_per_currency():
                 print(f"  {r['to_currency']} ({r['currency_name']}): {r['total_amount']} total bought")
         elif choice == "9":
+            # Admin: register a new currency.
+            add_currency(currencies)
+        elif choice == "10":
+            # Admin: edit an existing currency's name/symbol.
+            edit_currency(currencies)
+        elif choice == "11":
+            # Admin: add a new exchange rate pair or update an existing one.
+            manage_exchange_rate(currencies, rates)
+        elif choice == "12":
             # Exit the loop and end the program.
             print("Goodbye!")
             break
         else:
-            # Anything outside 1-9 is not a valid menu option.
+            # Anything outside 1-12 is not a valid menu option.
             print("Invalid choice, try again.")
 
 
