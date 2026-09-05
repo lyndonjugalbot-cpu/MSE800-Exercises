@@ -8,8 +8,6 @@
 ## cards = [11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
 # The cards in the list have equal probability of being drawn.
 # Cards are not removed from the deck as they are drawn.
-
-
 import random
 from art import logo, win, lose, draw
 
@@ -45,7 +43,7 @@ def calculate_score(cards):
     # If the computer_score is over 21, then the computer loses. If none of the above, then the player with the highest score wins. 
 def compare(user_score, computer_score):
     if user_score == computer_score:
-        print(draw)
+        return draw
     elif computer_score == 0:
         print(lose)
     elif user_score == 0:
