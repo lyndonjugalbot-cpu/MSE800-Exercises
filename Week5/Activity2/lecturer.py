@@ -1,3 +1,6 @@
+from decorators import require_enrolled
+
+
 # A Lecturer teaches one or more courses and is the person who records grades.
 class Lecturer:
     def __init__(self, l_id, l_name, l_email):
@@ -16,14 +19,9 @@ class Lecturer:
         course.lecturer = self
         self.courses.append(course)
 
+    @require_enrolled
     def record_grade(self, student, course, grade):
-        # A grade only makes sense if the student is actually in the course,
-        # so check that first and back out politely if they are not.
-        if student not in course.students:
-            print(f"{student.s_name} is not enrolled in {course.code}, so no grade was saved.")
-            return False
-
-        # Store the grade against the course code on the student's record.
+        # The enrolment check lives in @require_enrolled; just save the grade.
         student.grades[course.code] = grade
         return True
 
