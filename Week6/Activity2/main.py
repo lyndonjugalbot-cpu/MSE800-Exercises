@@ -5,12 +5,12 @@ Instead of repeating the same authentication check inside every function,
 a single @login_required decorator handles the access control.
 """
 
-
-# A simple in-memory "session" object representing the current employee.
 employee = {
     "name": "Lyndon Jugalbot",
     "logged_in": False,
 }
+
+
 
 #decorator to check if the employee is logged in before allowing access to certain functions
 def login_required(func):
@@ -33,7 +33,7 @@ def view_salary():
 
 @login_required
 def view_personal_details():
-    print(f"Name: {employee['name']} | Phone: 02904343199 | Address: 7/126 Victoria St, Onehunga, Auckland 1061")
+    print(f"Name: {employee['name']} | Phone: 02904312345 | Address: 7/150 Victoria St, Onehunga, Auckland 1061")
 
 
 @login_required
